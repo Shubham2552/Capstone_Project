@@ -1,0 +1,27 @@
+<%- include('./partials/headerPartial', { pageTitle: 'Delete' }) %>
+
+  <div class="container p-5">
+    <h1>Delete File</h1>
+
+    <div class="card">
+      <div class="card-body">
+        <form action="/s3/delete" method="post">
+          <div class="form-group">
+            <label for="filename">File Name:</label>
+            <input type="text" class="form-control" id="filename" name="filename" required>
+          </div>
+          <div class="form-group">
+            <label for="location">Location:</label>
+            <input type="text" class="form-control" id="location" name="location" required>
+          </div>
+          <button type="submit" class="btn btn-danger btn-block mt-3">Delete</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+
+    <%- include('./partials/footerPartial') %>
+
+
+

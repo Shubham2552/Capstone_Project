@@ -1,0 +1,56 @@
+
+<%- include('./partials/headerPartial', { pageTitle: 'Upload' }) %>
+
+
+
+
+  
+
+    <div class="container mt-5">
+      <div class="row justify-content-center">
+        <div class="col-md-6 col-sm-8">
+          <div class="card">
+            <div class="card-header bg-dark text-white">
+              <h4 class="mb-0">Upload File</h4>
+            </div>
+            <div class="card-body">
+              <form action="/s3/upload" method="post" enctype="multipart/form-data" >
+
+                <div class="form-group mt-3">
+                  <label for="inputName">File Name</label>
+                  <input name="filename" type="text" class="form-control" id="inputName" required>
+                </div>
+
+                <div class="form-group mt-3">
+                  <label for="inputLocation">Location</label>
+                  <input name="location" type="text" class="form-control" id="inputLocation" required>
+                </div>
+                <div class="form-group mt-3">
+                  <label for="inputaccessType">Access Type:(Public, Private, Shared)</label>
+                  <input type="text" class="form-control" name="accessType" id="inputaccessType" required>
+                </div>
+                <div class="form-group mt-3">
+                  <label for="inputDescription">Description</label>
+                  <input type="text" class="form-control" name="description" id="inputDescription" >
+                </div>
+                <div class="form-group mt-3">
+                  <label for="inputTag">Tag</label>
+                  <input type="text" class="form-control" name="tag" id="inputTag" >
+                </div>
+
+                <div class="form-group mt-3">
+                  <label for="fileInput">Upload File</label>
+                  <input type="file" class="form-control-file" id="fileInput" name="file">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block mt-3">Upload File</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <%- include('./partials/footerPartial') %>
+
+
+

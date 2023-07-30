@@ -1,0 +1,75 @@
+<%- include('./partials/headerPartial', { pageTitle: 'ViewFiles' }) %>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>File Name</th>
+        <th>Location</th>
+        <th>Access</th>
+        <th>Delete</th>
+        <th>Download</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      <% for (let item of files) { %>
+        <tr>
+          <td><%= item.name %></td>
+          <td><%= item.location %></td>
+          <td>
+            <!-- Button with Dropdown -->
+  <div class="btn-group">
+    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true"
+      aria-expanded="false">
+      <%= item.access %>
+    </button>
+    <div class="dropdown-menu">
+
+      <form action="/s3/visibility" method="post">
+        <input type="hidden" name="filename" value="<%= item.name %>">
+        <input type="hidden" name="location" value="<%= item.location %>">
+  
+        <!-- Visibility options -->
+        <label class="dropdown-item">
+          <input type="radio" name="visibility" value="Public" required> Public
+        </label>
+        <label class="dropdown-item">
+          <input type="radio" name="visibility" value="Private" required> Private
+        </label>
+        <label class="dropdown-item">
+          <input type="radio" name="visibility" value="Shared" required> Shared
+        </label>
+  
+        <!-- Submit Button -->
+        <button type="submit" class="dropdown-item btn btn-primary">Submit</button>
+      </form>
+    </div>
+  </div>
+  
+          </td>
+          <td>
+           
+            <form action="/s3/delete" method="post" >
+              <input type="hidden" name="filename" value="<%= item.name %>">
+              <input type="hidden" name="location" value="<%= item.location %>">
+              <button type="submit" class="btn btn-danger">Delete</button>
+            </form>
+     
+       
+        </td>
+
+        <td>
+          <form action="/s3/download" method="post" >
+            
+            <input type="hidden" name="filename" value="<%= item.name %>">
+            <input type="hidden" name="location" value="<%= item.location %>">
+            <button type="submit" class="btn btn-primary">Download</button>
+          </form>
+        </td>
+
+
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+  <%- include('./partials/footerPartial') %>

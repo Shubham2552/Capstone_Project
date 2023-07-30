@@ -1,0 +1,64 @@
+<%- include('./partials/headerPartial', { pageTitle: 'Search' }) %>
+
+  
+
+  <div class="container mt-5">
+    <div class="row justify-content-center">
+      <div class="col-md-6 col-sm-8">
+        <div class="card">
+          <div class="card-header bg-dark text-white">
+            <h4 class="mb-0">Search</h4>
+          </div>
+          <div class="card-body">
+            <form action="/s3/searchfile" method="post">
+              <div class="input-group">
+                <input type="text" name="keyword" class="form-control" placeholder="Search for something..." aria-label="Search" aria-describedby="searchButton">
+                <div class="input-group-append">
+                  <button class="btn btn-primary" type="submit" id="searchButton">Search</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <% if (results && results.length > 0) { %>
+      <div class="row mt-4">
+        <div class="col-md-12">
+          <h2>Search Results:</h2>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Location</th>
+                <th>Visibility</th>
+                <th>Description</th>
+                <th>Tag</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% results.forEach(result => { %>
+                <tr>
+                  <td><%= result.name %></td>
+                  <td><%= result.location %></td>
+                  <td><%= result.access %></td>
+                  <td><%= result.description %></td>
+                  <td><%= result.tag %></td>
+                </tr>
+              <% }); %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } else if (searched) { %>
+      <div class="row mt-4">
+        <div class="col-md-12">
+          <p>No results found.</p>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+
+  <%- include('./partials/footerPartial') %>

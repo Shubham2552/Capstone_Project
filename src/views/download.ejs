@@ -1,0 +1,35 @@
+<%- include('./partials/headerPartial', { pageTitle: 'Download' }) %>
+
+
+  <div class="container p-5">
+    <h1>Download File</h1>
+
+    <div class="card">
+      <div class="card-body">
+        <form target="/s3/download" method="post">
+          <div class="form-group">
+            <label for="email">Email of File Owner:</label>
+            <input type="text" class="form-control" id="email" name="email" required>
+          </div>
+          <div class="form-group">
+            <label for="filename">File Name:</label>
+            <input type="text" class="form-control" id="filename" name="filename" required>
+          </div>
+          <div class="form-group">
+            <label for="location">Location:</label>
+            <input type="text" class="form-control" id="location" name="location" required>
+          </div>
+          <button type="submit" class="btn btn-primary mt-3">Get File</button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+
+
+
+    <%- include('./partials/footerPartial') %>
+
+
+
