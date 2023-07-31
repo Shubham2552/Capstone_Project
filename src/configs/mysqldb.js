@@ -15,7 +15,7 @@ const sequelize=new Sequelize(
 // { alter: true }
 const connectToDB= async ()=>{
     try{
-        sequelize.sync();
+        sequelize.sync({ alter: true });
         await sequelize.authenticate();
         console.log("Successfully connected to S3BucketDB");
     }catch(error){

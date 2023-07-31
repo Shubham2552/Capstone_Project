@@ -71,23 +71,40 @@ router.get('/upload',(req,res)=>{
    const files= await FileStore.findAll({ where: { owner: req.userid } });
    if(!files) return res.status(404).send('Files not found');
 
+    let specificUserId=req.userid;
+   const sharedWithYou= await sequalize.query(
+    `SELECT *
+     FROM FileStores AS FS
+     LEFT JOIN SharedUserStores AS SFS
+     ON SFS.fileid = FS.fileid
+     LEFT JOIN users AS U
+     ON FS.owner = U.userid
+     WHERE SFS.userid = :specificUserId`,
+    {
+      replacements: { specificUserId },
+      type: sequalize.QueryTypes.SELECT,
+    }
+  )
 
-   const sharedFiles=await SharedUserStore.findAll({
-    where:{
-      userid:req.userid,
-    },
-    // include: [
-    //   {
-    //     model: FileStore,
-    //     joinType: 'LEFT OUTER JOIN',
-    //   },
-    // ],
-   })
+
+  const sharedByYou= await sequalize.query(
+    `SELECT *
+     FROM FileStores AS FS
+     LEFT JOIN SharedUserStores AS SFS
+     ON SFS.fileid = FS.fileid
+     LEFT JOIN users AS U
+     ON SFS.userid = U.userid
+     WHERE SFS.owner = ${req.userid}`,
+    {
+    
+      type: sequalize.QueryTypes.SELECT,
+    }
+  )
+
+  console.log(sharedByYou);
 
 
-
-   console.log(sharedFiles);
-   return res.render('viewfiles', { files });
+   return res.render('viewfiles', { files ,sharedWithYou,sharedByYou});
 
   })
 

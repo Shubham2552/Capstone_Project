@@ -21,6 +21,14 @@ const SharedUserStore=sequalize.define('SharedUserStore',{
           },
         allowNull:false
     },
+    owner:{
+        type:DataTypes.BIGINT,
+        // references: {
+        //     model: User,
+        //     key: 'userid',
+        //   },
+        allowNull:false
+    },
     accessType:{
         type: DataTypes.ENUM("ReadOnly", "WriteAccess"),
         allowNull:false,

@@ -219,7 +219,8 @@ const fileDelete = async (req, res, next) => {
         if(file){
 
           let updatepermission=await SharedUserStore.update(
-              { accessType: access },
+              { accessType: access ,
+                owner:req.userid},
               {
                 where: {
                   userId: user.userid,
@@ -236,6 +237,7 @@ const fileDelete = async (req, res, next) => {
             fileid:result.fileid,
             userid:user.userid,
             accessType:access,
+            owner:req.userid,
           })
   
          await share.save().then(()=>{

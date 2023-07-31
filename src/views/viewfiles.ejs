@@ -5,6 +5,8 @@
       <tr>
         <th>File Name</th>
         <th>Location</th>
+        <th>Description</th>
+        <th>Tag</th>
         <th>Access</th>
         <th>Delete</th>
         <th>Download</th>
@@ -16,6 +18,8 @@
         <tr>
           <td><%= item.name %></td>
           <td><%= item.location %></td>
+           <td><%= item.description %></td>
+          <td><%= item.tag %></td>
           <td>
             <!-- Button with Dropdown -->
   <div class="btn-group">
@@ -56,6 +60,103 @@
             </form>
      
        
+        </td>
+
+        <td>
+          <form action="/s3/download" method="post" >
+            
+            <input type="hidden" name="filename" value="<%= item.name %>">
+            <input type="hidden" name="location" value="<%= item.location %>">
+            <button type="submit" class="btn btn-primary">Download</button>
+          </form>
+        </td>
+
+
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+
+  <div class="row">
+    <div class="col">
+      <h2 class="text-center mt-5 mb-5">Shared With You</h2>
+    </div>
+  </div>
+<!-- This table is for shared with you -->
+    <table class="table">
+    <thead>
+      <tr>
+        <th>File Name</th>
+        <th>Location</th>
+        <th>Description</th>
+        <th>Tag</th>
+        <th>Access</th>
+        <th>Owner</th>
+        <th>Download</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      <% for (let item of sharedWithYou) { %>
+        <tr>
+          <td><%= item.name %></td>
+          <td><%= item.location %></td>
+           <td><%= item.description %></td>
+          <td><%= item.tag %></td>
+          <td>
+            <%= item.accessType %>
+          </td>
+          <td>
+            
+            <%= item.email %>
+        </td>
+
+        <td>
+          <form action="/s3/download" method="post" >
+            
+            <input type="hidden" name="filename" value="<%= item.name %>">
+            <input type="hidden" name="location" value="<%= item.location %>">
+            <button type="submit" class="btn btn-primary">Download</button>
+          </form>
+        </td>
+
+
+        </tr>
+      <% } %>
+    </tbody>
+  </table>
+
+
+  <div class="row">
+    <div class="col">
+      <h2 class="text-center mt-5 mb-5">Shared By You</h2>
+    </div>
+  </div>
+
+  <!-- This table is for shared by you -->
+  <table class="table">
+    <thead>
+      <tr>
+        <th>File Name</th>
+        <th>Location</th>
+        <th>Access</th>
+        <th>SharedWith</th>
+        <th>ChangeAccess</th>
+
+      </tr>
+    </thead>
+    <tbody>
+      <% for (let item of sharedByYou) { %>
+        <tr>
+          <td><%= item.name %></td>
+          <td><%= item.location %></td>
+          <td>
+            <%= item.accessType %>
+          </td>
+          <td>
+            
+            <%= item.email %>
         </td>
 
         <td>
