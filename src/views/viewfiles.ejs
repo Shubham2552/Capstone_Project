@@ -92,7 +92,6 @@
         <th>Description</th>
         <th>Tag</th>
         <th>Access</th>
-        <th>Owner</th>
         <th>Download</th>
 
       </tr>
@@ -100,23 +99,19 @@
     <tbody>
       <% for (let item of sharedWithYou) { %>
         <tr>
-          <td><%= item.name %></td>
-          <td><%= item.location %></td>
-           <td><%= item.description %></td>
-          <td><%= item.tag %></td>
+          <td><%= item.FileStore.name %></td>
+          <td><%= item.FileStore.location %></td>
+           <td><%= item.FileStore.description %></td>
+          <td><%= item.FileStore.tag %></td>
           <td>
             <%= item.accessType %>
           </td>
-          <td>
-            
-            <%= item.email %>
-        </td>
-
+  
         <td>
           <form action="/s3/download" method="post" >
-            
-            <input type="hidden" name="filename" value="<%= item.name %>">
-            <input type="hidden" name="location" value="<%= item.location %>">
+            <input type="hidden" name="owner" value="<%= item.FileStore.UserId%>">
+            <input type="hidden" name="filename" value="<%= item.FileStore.name  %>">
+            <input type="hidden" name="location" value="<%= item.FileStore.location %>">
             <button type="submit" class="btn btn-primary">Download</button>
           </form>
         </td>
@@ -134,6 +129,10 @@
     </div>
   </div>
 
+
+
+
+
   <!-- This table is for shared by you -->
   <table class="table">
     <thead>
@@ -149,14 +148,14 @@
     <tbody>
       <% for (let item of sharedByYou) { %>
         <tr>
-          <td><%= item.name %></td>
-          <td><%= item.location %></td>
+          <td><%= item.FileStore.name %></td>
+          <td><%= item.FileStore.location %></td>
           <td>
             <%= item.accessType %>
           </td>
           <td>
             
-            <%= item.email %>
+            <%= item.User.email %>
         </td>
 
         <td>
@@ -164,7 +163,7 @@
             
             <input type="hidden" name="filename" value="<%= item.name %>">
             <input type="hidden" name="location" value="<%= item.location %>">
-            <button type="submit" class="btn btn-primary">Download</button>
+            <button type="submit" class="btn btn-primary">ChangeAccess</button>
           </form>
         </td>
 
@@ -173,4 +172,5 @@
       <% } %>
     </tbody>
   </table>
+  
   <%- include('./partials/footerPartial') %>

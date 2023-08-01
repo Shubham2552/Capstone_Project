@@ -1,11 +1,12 @@
 const jwt=require('jsonwebtoken');
 const sequalize=require('../configs/mysqldb').sequelize;
-const User=require('../models/user');
-const FileStore=require('../models/filestore');
-const VersionStore=require('../models/versionstore');
-const SharedUserStore=require('../models/shareduserstore');
+
 const path=require('path');
 const { Op } = require('sequelize');
+const {User, FileStore, SharedUserStore, VersionStore}=require('../models/Models')
+
+//Download Funtion
+
 
 
 //middleware to check if auth jwt token in available that is user is logged in
@@ -20,7 +21,7 @@ const tokenAuth = (req, res, next) => {
       if (err) {
         return res.status(401).send('Token verification failed.');
       }
-      req.userid=decoded.id;
+      req.body.userid=decoded.id;
   
     })
     next(); // Call next() to pass control to the next middleware or route handler
@@ -31,20 +32,16 @@ const tokenAuth = (req, res, next) => {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded.' });
     }
-  
-    const user = await User.findOne({ where: { userid: req.userid } });
+    
+
    
-    
-    if(!user) return res.status(401).send("User not found");
-  
-    
-    let result=await FileStore.findOne({
-      where: {
-        name: req.body.filename,
-        location: req.body.location,
-        owner:req.userid
-      },
-    })
+    const result= await FileStore.findOne({ where: {
+      name: req.body.filename,
+      location: req.body.location,
+       UserId: req.body.userid 
+      } });
+
+      console.log(result)
    //if file already exist 
     if(result){
   
@@ -52,7 +49,7 @@ const tokenAuth = (req, res, next) => {
      let previousversion=await VersionStore.findOne({
         attributes: [[sequalize.fn('max', sequalize.col('version')), 'maxVersion']],
         where: {
-          fileid: result.fileid,
+          FileStoreId: result.id,
         },
       })
   
@@ -68,7 +65,7 @@ const tokenAuth = (req, res, next) => {
       console.log(result.fileid);
       //add previous file in versionstore table
       const newverison= VersionStore.build({
-        fileid:result.fileid,
+        FileStoreId:result.id,
         version:versionNumber,
         uuid:result.uuid,
    
@@ -87,7 +84,7 @@ const tokenAuth = (req, res, next) => {
          },
           {
             where: {
-              fileid: result.fileid,
+              id: result.id,
 
             },
           }
@@ -99,7 +96,7 @@ const tokenAuth = (req, res, next) => {
         name:req.body.filename,
         location:req.body.location,
         access:req.body.accessType,
-        owner:req.userid,
+        UserId:req.body.userid,
         uuid:req.file.filename,
         description:req.body.description,
         tag:req.body.tag,
@@ -122,7 +119,7 @@ const fileDelete = async (req, res, next) => {
       where: {
         name: req.body.filename,
         location: req.body.location,
-        owner:req.userid
+        UserId:req.body.userid
       },
     })
    //if file is found 
@@ -131,7 +128,7 @@ const fileDelete = async (req, res, next) => {
     //fetch previous version from version store
      let previousversion=await VersionStore.findOne({
       where: {
-        fileid: result.fileid,
+        FileStoreId: result.id,
       },
       order: [['version', 'DESC']], // Sort by version in descending order
     })
@@ -148,14 +145,14 @@ const fileDelete = async (req, res, next) => {
             where: {
               name: req.body.filename,
               location: req.body.location,
-              owner:req.userid
+              UserId:req.body.userid
             },
           }
         )
         //delete the max verison in versionstore table
         await VersionStore.destroy({
           where: {
-            fileid: result.fileid,
+            FileStoreId: result.id,
             version:previousversion.version
           },
         })
@@ -165,7 +162,7 @@ const fileDelete = async (req, res, next) => {
       }else{
         await FileStore.destroy({
           where: {
-            fileid: result.fileid,
+            FileStoreId: result.id,
           },
         })
         
@@ -189,7 +186,7 @@ const fileDelete = async (req, res, next) => {
       where: {
         name: req.body.filename,
         location: req.body.location,
-        owner:req.userid
+        UserId:req.body.userid
       },
     })
     
@@ -210,8 +207,8 @@ const fileDelete = async (req, res, next) => {
 
         let file=await SharedUserStore.findOne({
           where:{
-            fileid:result.fileid,
-            userid:user.userid,
+            FileStoreId:result.id,
+            UserId:user.id,
           }
         })
 
@@ -219,12 +216,11 @@ const fileDelete = async (req, res, next) => {
         if(file){
 
           let updatepermission=await SharedUserStore.update(
-              { accessType: access ,
-                owner:req.userid},
+              { accessType: access },
               {
                 where: {
-                  userId: user.userid,
-                  fileId: result.fileid,
+                  UserId: user.userid,
+                  FileStoreId: result.id,
                 },
               }
             )
@@ -234,10 +230,10 @@ const fileDelete = async (req, res, next) => {
 
         }else{
           let share= SharedUserStore.build({
-            fileid:result.fileid,
-            userid:user.userid,
+            FileStoreId:result.id,
+            UserId:user.id,
             accessType:access,
-            owner:req.userid,
+            owner:req.body.userid,
           })
   
          await share.save().then(()=>{
@@ -271,7 +267,7 @@ const fileDelete = async (req, res, next) => {
       { access: req.body.visibility },
       {
         where: {
-          owner: req.userid,
+          UserId: req.body.userid,
           name: req.body.filename,
           location:req.body.location
         },
@@ -288,13 +284,10 @@ const fileDelete = async (req, res, next) => {
   
 
 const fileDownload= async (req,res)=>{
-
   function download(){
     try {
-      // Retrieve the file details from the database using Sequelize
+      // Retrieve the file details from the database using Sequeliz
   
-  
- 
       // Get the filename from the database record
       const filename = file.uuid;
   
@@ -302,7 +295,7 @@ const fileDownload= async (req,res)=>{
       const filePath = path.join(__dirname, '../uploads', filename);
   
       const customFilename = `${file.name}${file.extension}`;
-
+  
       // Send the file as a response using res.download()
       return res.download(filePath,customFilename , (err) => {
         if (err) {
@@ -315,21 +308,17 @@ const fileDownload= async (req,res)=>{
       return res.status(500).send('Internal server error.');
     }
   }
-  
 
-    // let user=await User.findOne({
-    //   where:{
-    //     email:req.body.email
-    //   }
-    // })
+  console.log(req.body.owner);
 
-
+  let user=req.body.userid;
+  if(req.body.owner) user=req.body.owner
 
     // if(!user) return res.send('No user found');
 
     let file=await FileStore.findOne({
       where:{
-        owner:req.userid,
+        UserId:user,
         name:req.body.filename,
         location:req.body.location,
       }
@@ -339,8 +328,8 @@ const fileDownload= async (req,res)=>{
     console.log(file);
 
     if(!file) return res.send("No File Found");
-    if(file.owner===req.userid){
-      download(file);
+    if(file.UserId===req.body.userid){
+      download();
       return;
     }
 
@@ -353,8 +342,8 @@ const fileDownload= async (req,res)=>{
     
       let access=await SharedUserStore.findOne({
        where:{
-         fileid:file.fileid,
-         userid:req.userid
+         FileStoreId:file.id,
+         UserId:req.body.userid
        }
      })
  
@@ -363,7 +352,8 @@ const fileDownload= async (req,res)=>{
     
 
     if(access.accessType==="ReadOnly" || access.accessType==="WriteAccess"){
-    download();}
+    download();
+  }
   }
     else{
       return res.send('Not Authorized')
@@ -375,7 +365,7 @@ const searchFile=async(req,res)=>{
   try {
     const results = await FileStore.findAll({
       where: {
-        owner:req.userid,
+        UserId:req.body.userid,
         [Op.or]: [
           { description: { [Op.like]: `%${req.body.keyword}%` } },
           { tag: { [Op.like]: `%${req.body.keyword}%` } },

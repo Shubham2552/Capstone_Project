@@ -1,8 +1,7 @@
 const express=require('express');
 const router=express.Router();
 const sequalize=require('../configs/mysqldb').sequelize;
-const User=require('../models/user');
-const FileStore=require('../models/filestore')
+const {User}=require('../models/Models')
 const { Model } = require('sequelize');
 const bcrypt=require('bcrypt');
 const session = require('express-session');
@@ -59,7 +58,7 @@ router.post('/login',async(req,res)=>{
           if(passwordIsValid)
           {            
             
-              var token = jwt.sign({ id: user.userid  }, "SECRET", { expiresIn: 86400});
+              var token = jwt.sign({ id: user.id  }, "SECRET", { expiresIn: 86400});
             //send token as response
                   req.session.token = token;
                  return res.redirect('/s3/viewfiles')

@@ -1,17 +1,16 @@
 const express=require('express');
 const router=express.Router();
 const sequalize=require('../configs/mysqldb').sequelize;
-const User=require('../models/user');
-const FileStore=require('../models/filestore');
+
+
 const { Model } = require('sequelize');
 const bcrypt=require('bcrypt');
 const jwt=require('jsonwebtoken');
 const multer=require('multer');
-const VersionStore=require('../models/versionstore');
-const SharedUserStore=require('../models/shareduserstore');
+const {User, FileStore, SharedUserStore, VersionStore}=require('../models/Models');
 const { v4: uuidv4 } = require('uuid');
 const path=require('path');
-const { version } = require('os');
+
 
 let {tokenAuth,fileUpload,fileDelete,fileShare,setVisibility,fileDownload,searchFile}=require('../middleware/s3middleware')
 
@@ -59,7 +58,7 @@ router.get('/upload',(req,res)=>{
       };
 
 
-     console.log(req.body,req.session.token);
+   
     return res.redirect('/s3/viewfiles');
   });
 
@@ -67,41 +66,28 @@ router.get('/upload',(req,res)=>{
 //route to view all files where user is owner
   router.get('/viewfiles',tokenAuth,async (req,res)=>{
 
-    console.log(req.userid);
-   const files= await FileStore.findAll({ where: { owner: req.userid } });
+    
+   const files= await FileStore.findAll({ where: { UserId: req.body.userid } });
    if(!files) return res.status(404).send('Files not found');
 
-    let specificUserId=req.userid;
-   const sharedWithYou= await sequalize.query(
-    `SELECT *
-     FROM FileStores AS FS
-     LEFT JOIN SharedUserStores AS SFS
-     ON SFS.fileid = FS.fileid
-     LEFT JOIN users AS U
-     ON FS.owner = U.userid
-     WHERE SFS.userid = :specificUserId`,
-    {
-      replacements: { specificUserId },
-      type: sequalize.QueryTypes.SELECT,
-    }
-  )
+
+   const sharedWithYou= await SharedUserStore.findAll({
+    where:{
+      UserId:req.body.userid
+    },
+    include:[User,FileStore],
+   })
 
 
-  const sharedByYou= await sequalize.query(
-    `SELECT *
-     FROM FileStores AS FS
-     LEFT JOIN SharedUserStores AS SFS
-     ON SFS.fileid = FS.fileid
-     LEFT JOIN users AS U
-     ON SFS.userid = U.userid
-     WHERE SFS.owner = ${req.userid}`,
-    {
-    
-      type: sequalize.QueryTypes.SELECT,
-    }
-  )
+  const sharedByYou= await SharedUserStore.findAll({
+    where:{
+      owner:req.body.userid,
+    },
+    include:[FileStore,User]
+  })
 
-  console.log(sharedByYou);
+  console.log(sharedWithYou[0].FileStore);
+
 
 
    return res.render('viewfiles', { files ,sharedWithYou,sharedByYou});
@@ -116,9 +102,7 @@ res.send('Some critical Error Occured');
 
 router.get('/share',(req,res)=>{
   res.render('share')
-}).post('/share',tokenAuth,fileShare,(req,res)=>{
-res.send('Some critical Error Occured');
-})
+}).post('/share',tokenAuth,fileShare)
 
 
 router.get('/visibility',(req,res)=>{

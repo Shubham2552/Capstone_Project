@@ -3,13 +3,12 @@ const userRoutes=require('./routes/userRoutes');
 const express=require("express");
 const cors=require("cors")
 const {sequalize, connectToDB} = require('./configs/mysqldb');
-const User=require('./models/user');
-const FileStore=require('./models/filestore');
-const SharedUserStore=require('./models/shareduserstore');
+
 const session = require('express-session');
 const s3routes=require('./routes/s3Routes');
+const {User, FileStore, SharedUserStore, VersionStore}=require('./models/Models');
 const path = require('path');
-const VersionStore = require("./models/versionstore");
+
 const app=express();
 
 const PORT=3000;
@@ -35,8 +34,9 @@ app.use('/s3',s3routes);
 
 
 
-app.get('/',(req,res)=>{
-    res.render('login');
+app.get('/',async(req,res)=>{
+res.render('login')
+    
 })
 
 
