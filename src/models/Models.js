@@ -98,7 +98,10 @@ const VersionStore=sequalize.define('VersionStore',{
         type:DataTypes.STRING,
         allowNull:false
     },
-
+    extension:{
+        type:DataTypes.STRING,
+        allowNull:false
+    },
 
 })
 

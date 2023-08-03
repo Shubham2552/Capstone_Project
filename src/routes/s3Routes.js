@@ -86,7 +86,8 @@ router.get('/upload',(req,res)=>{
     include:[FileStore,User]
   })
 
-  console.log(sharedWithYou[0].FileStore);
+
+
 
 
 
@@ -119,5 +120,12 @@ router.get('/download',(req,res)=>{
 router.get('/searchfile',(req,res)=>{
   res.render('searchfile', { results: [], searched: false });
 }).post('/searchfile',tokenAuth,searchFile)
+
+
+router.post('/deleteshare',tokenAuth,async(req,res)=>{
+  console.log(req.body.shareid)
+  await SharedUserStore.destroy({ where: { id: req.body.sharedid} });
+  res.redirect('/s3/viewfiles')
+})
 
 module.exports=router;

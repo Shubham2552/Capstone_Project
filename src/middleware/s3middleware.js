@@ -68,6 +68,7 @@ const tokenAuth = (req, res, next) => {
         FileStoreId:result.id,
         version:versionNumber,
         uuid:result.uuid,
+        extension:result.extension
    
        })
   
@@ -113,7 +114,7 @@ const tokenAuth = (req, res, next) => {
   //file upload middleware
 const fileDelete = async (req, res, next) => {
   console.log(req.body);
-  
+  if(req.body.owner) req.body.userid=req.body.owner;
     
     let result=await FileStore.findOne({
       where: {
@@ -140,7 +141,7 @@ const fileDelete = async (req, res, next) => {
 
         //update uuid for current file to previousversion
        await FileStore.update(
-          { uuid: previousversion.uuid },
+          { uuid: previousversion.uuid, extension:previousversion.extension },
           {
             where: {
               name: req.body.filename,
@@ -160,13 +161,25 @@ const fileDelete = async (req, res, next) => {
 
 
       }else{
-        await FileStore.destroy({
+
+        await SharedUserStore.destroy({
           where: {
             FileStoreId: result.id,
           },
         })
-        
+          
+       
+
+        await FileStore.destroy({
+          where: {
+            id: result.id,
+          },
+        })
+
       }
+
+
+      
       return res.redirect('viewfiles');
 
     }else{
@@ -219,13 +232,13 @@ const fileDelete = async (req, res, next) => {
               { accessType: access },
               {
                 where: {
-                  UserId: user.userid,
+                  UserId: user.id,
                   FileStoreId: result.id,
                 },
               }
             )
 
-            return res.send("Succesfully Updated Permission");
+            return res.redirect('/s3/viewfiles');
         
 
         }else{
