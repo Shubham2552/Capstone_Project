@@ -8,6 +8,7 @@
         <th>Description</th>
         <th>Tag</th>
         <th>Access</th>
+        <th>View Previous</th>
         <th>Delete</th>
         <th>Download</th>
 
@@ -50,6 +51,15 @@
     </div>
   </div>
   
+          </td>
+          <td>
+            <form action="/s3/previousversion" method="post" >
+              
+              <input type="hidden" name="filename" value="<%= item.name %>">
+              <input type="hidden" name="location" value="<%= item.location %>">
+              <input type="hidden" name="filestoreid" value="<%= item.id %>">
+              <button type="submit" class="btn btn-primary">View Previous</button>
+            </form>
           </td>
           <td>
            

@@ -128,4 +128,45 @@ router.post('/deleteshare',tokenAuth,async(req,res)=>{
   res.redirect('/s3/viewfiles')
 })
 
+
+router.post('/previousversion',tokenAuth,async(req,res)=>{
+  let {filename,location}=req.body;
+  let previousVersion=await VersionStore.findAll({ where: { FileStoreId: req.body.filestoreid} });
+  return res.render('previousversion',{previousVersion,filename,location});
+})
+
+router.post('/previousversiondownload',tokenAuth,async(req,res)=>{
+  const {filename}=req.body;
+  
+  let previousVersion=await VersionStore.findOne({ where: { id: req.body.id} });
+  
+  function download(){
+    try {
+      // Retrieve the file details from the database using Sequeliz
+  
+      // Get the filename from the database record
+      const filename2 = previousVersion.uuid;
+  
+      // Create the file path
+      const filePath = path.join(__dirname, '../uploads', filename2);
+  
+      const customFilename = `${filename}${previousVersion.extension}`;
+  
+      // Send the file as a response using res.download()
+      return res.download(filePath,customFilename , (err) => {
+        if (err) {
+          console.error('Error occurred during file download:', err);
+         return res.status(500).send('Error downloading the file.');
+        }
+      });
+    } catch (error) {
+      console.error('Error occurred:', error);
+      return res.status(500).send('Internal server error.');
+    }
+  }
+
+  return download();
+ 
+})
+
 module.exports=router;

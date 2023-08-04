@@ -3,7 +3,8 @@ const sequalize=require('../configs/mysqldb').sequelize;
 
 const path=require('path');
 const { Op } = require('sequelize');
-const {User, FileStore, SharedUserStore, VersionStore}=require('../models/Models')
+const {User, FileStore, SharedUserStore, VersionStore}=require('../models/Models');
+const e = require('express');
 
 //Download Funtion
 
@@ -248,11 +249,25 @@ const fileDelete = async (req, res, next) => {
             accessType:access,
             owner:req.body.userid,
           })
+
+
   
-         await share.save().then(()=>{
-            return res.status(200).send("Successfully Shared File");
+         await share.save().catch((e)=>{
+            return  res.send(e);
           })
           
+          await FileStore.update(
+            { access: "Shared" },
+            {
+              where: {
+               id:result.id
+              },
+            }
+          ).then(()=>{
+            return res.status(200).redirect('viewfiles')
+          }).catch(()=>{
+            res.status(404).send('File not found');
+          })
         }
 
 
