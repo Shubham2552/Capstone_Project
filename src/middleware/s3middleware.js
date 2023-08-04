@@ -1,10 +1,10 @@
 const jwt=require('jsonwebtoken');
 const sequalize=require('../configs/mysqldb').sequelize;
-
+const fs=require('fs');
 const path=require('path');
 const { Op } = require('sequelize');
 const {User, FileStore, SharedUserStore, VersionStore}=require('../models/Models');
-const e = require('express');
+
 
 //Download Funtion
 
@@ -114,9 +114,10 @@ const tokenAuth = (req, res, next) => {
 
   //file upload middleware
 const fileDelete = async (req, res, next) => {
-  console.log(req.body);
+
+  const uploadsFolder = path.join(__dirname, 'uploads');
   if(req.body.owner) req.body.userid=req.body.owner;
-    
+    //Find the file to delete
     let result=await FileStore.findOne({
       where: {
         name: req.body.filename,
@@ -124,70 +125,66 @@ const fileDelete = async (req, res, next) => {
         UserId:req.body.userid
       },
     })
-   //if file is found 
+
+    
     if(result){
-  
-    //fetch previous version from version store
-     let previousversion=await VersionStore.findOne({
-      where: {
-        FileStoreId: result.id,
-      },
-      order: [['version', 'DESC']], // Sort by version in descending order
-    })
- 
-
-      //if previous verison exist
-      console.log(previousversion);
-      if(previousversion!=null){
-
-        //update uuid for current file to previousversion
-       await FileStore.update(
-          { uuid: previousversion.uuid, extension:previousversion.extension },
-          {
-            where: {
-              name: req.body.filename,
-              location: req.body.location,
-              UserId:req.body.userid
-            },
-          }
-        )
-        //delete the max verison in versionstore table
-        await VersionStore.destroy({
-          where: {
-            FileStoreId: result.id,
-            version:previousversion.version
-          },
-        })
-
-
-
-      }else{
-
-        await SharedUserStore.destroy({
-          where: {
-            FileStoreId: result.id,
-          },
-        })
-          
+//after file is found get all the verisions
+      let versions=await VersionStore.findAll({
+        where:{
+          FileStoreId:result.id
+        }
+      })
+      if(versions){
        
-
-        await FileStore.destroy({
-          where: {
-            id: result.id,
-          },
-        })
-
+     //if versions exist
+        for(let i in versions){
+          const filename =   versions[i].dataValues.uuid;
+          const filePath = path.join(uploadsFolder, filename);
+          if (fs.existsSync(filePath)) {
+            // Delete the file
+            fs.unlinkSync(filePath);
+            console.log("Successfully deleted "+i.dataValues.uuid);
+          } 
+        }
       }
 
+//delete filestore entry latest file
+      const filename =  result.uuid;
+      const filePath = path.join(uploadsFolder, filename);
+      if (fs.existsSync(filePath)) {
+        // Delete the file
+        fs.unlinkSync(filePath);
+        console.log("Successfully deleted "+result.uuid);
+      }
 
-      
-      return res.redirect('viewfiles');
+      //destroy version entries in database
+        await VersionStore.destroy({
+          where: {
+            FileStoreId: result.id
+          }
+        })
+        //destroy entry in filestore
+        await FileStore.destroy({
+          where: {
+            id: result.id
+          }
+        })
 
+        await SharedUserStore.destroy({
+          where:{
+            FileStoreId:result.id,
+          }
+        })
+
+        res.redirect('/s3/viewfiles')
     }else{
-  
-   return res.status(500).send('File not found');
+
+      //if file not found
+      res.send("File not found");
     }
-    next(); // Call next() to pass control to the next middleware or route handler
+    
+  
+
   };
 
 

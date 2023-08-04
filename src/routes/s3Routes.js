@@ -88,7 +88,8 @@ router.get('/upload',(req,res)=>{
 
 
 
-
+  console.log(sharedByYou);
+  console.log(sharedWithYou);
 
 
    return res.render('viewfiles', { files ,sharedWithYou,sharedByYou});

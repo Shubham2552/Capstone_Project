@@ -110,6 +110,7 @@
       </tr>
     </thead>
     <tbody>
+      <% if (sharedWithYou.length > 0) { %>
       <% for (let item of sharedWithYou) { %>
         <tr>
           <td><%= item.FileStore.name %></td>
@@ -146,6 +147,12 @@
 
         </tr>
       <% } %>
+
+      <% } else { %>
+        <tr>
+          <td colspan="4">No items shared with you.</td>
+        </tr>
+      <% } %>
     </tbody>
   </table>
  
@@ -173,6 +180,7 @@
       </tr>
     </thead>
     <tbody>
+      <% if (sharedByYou.length > 0) { %>
       <% for (let item of sharedByYou) { %>
         <tr>
           <td><%= item.FileStore.name %></td>
@@ -220,6 +228,11 @@
         </td>
 
 
+        </tr>
+      <% } %>
+      <% } else { %>
+        <tr>
+          <td colspan="4">No items shared with you.</td>
         </tr>
       <% } %>
     </tbody>
