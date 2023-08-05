@@ -31,8 +31,8 @@
     <div class="dropdown-menu">
 
       <form action="/s3/visibility" method="post">
-        <input type="hidden" name="filename" value="<%= item.name %>">
-        <input type="hidden" name="location" value="<%= item.location %>">
+        <input type="hidden" name="fileid" value="<%= item.id %>">
+
   
         <!-- Visibility options -->
         <label class="dropdown-item">
@@ -64,8 +64,8 @@
           <td>
            
             <form action="/s3/delete" method="post" >
-              <input type="hidden" name="filename" value="<%= item.name %>">
-              <input type="hidden" name="location" value="<%= item.location %>">
+              <input type="hidden" name="fileid" value="<%= item.id %>">
+
               <button type="submit" class="btn btn-danger">Delete</button>
             </form>
      
@@ -75,8 +75,7 @@
         <td>
           <form action="/s3/download" method="post" >
             
-            <input type="hidden" name="filename" value="<%= item.name %>">
-            <input type="hidden" name="location" value="<%= item.location %>">
+            <input type="hidden" name="fileid" value="<%= item.id%>">
             <button type="submit" class="btn btn-primary">Download</button>
           </form>
         </td>
@@ -122,9 +121,7 @@
           </td>
           <td>
             <form action="/s3/download" method="post" >
-              <input type="hidden" name="owner" value="<%= item.FileStore.UserId%>">
-              <input type="hidden" name="filename" value="<%= item.FileStore.name  %>">
-              <input type="hidden" name="location" value="<%= item.FileStore.location %>">
+              <input type="hidden" name="fileid" value="<%= item.FileStore.id%>">
               <button type="submit" class="btn btn-primary">Download</button>
             </form>
           </td>
@@ -133,9 +130,9 @@
         <% if (item.accessType==="WriteAccess") { %>
           <td>
             <form action="/s3/delete" method="post" >
-              <input type="hidden" name="owner" value="<%= item.FileStore.UserId%>">
-              <input type="hidden" name="filename" value="<%= item.FileStore.name  %>">
-              <input type="hidden" name="location" value="<%= item.FileStore.location %>">
+              <input type="hidden" name="fileid" value="<%= item.FileStore.id%>">
+    
+         
               <button type="submit" class="btn btn-primary">Delete</button>
             </form>
           </td>
@@ -194,9 +191,8 @@
     <div class="dropdown-menu">
 
       <form action="/s3/share" method="post">
-        <input type="hidden" name="email" value="<%= item.User.email %>">
-        <input type="hidden" name="filename" value="<%= item.FileStore.name %>">
-        <input type="hidden" name="location" value="<%= item.FileStore.location %>">
+        <input type="hidden" name="shareduserstoreid" value="<%= item.id %>">
+
   
         <!-- Visibility options -->
         <label class="dropdown-item">
@@ -222,7 +218,7 @@
         <td>
           <form action="/s3/deleteshare" method="post" >
             
-            <input type="hidden" name="sharedid" value="<%= item.id %>">
+            <input type="hidden" name="sharedstoreid" value="<%= item.id %>">
             <button type="submit" class="btn btn-primary">Delete Share</button>
           </form>
         </td>

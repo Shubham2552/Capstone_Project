@@ -6,7 +6,35 @@ const { Op } = require('sequelize');
 const {User, FileStore, SharedUserStore, VersionStore}=require('../models/Models');
 
 
-//Download Funtion
+//authorize function Funtion
+
+async function AuthAction(user,fileid,action="WriteAccess"){
+  
+  let filestore=await FileStore.findOne({
+    where:{
+      id:fileid
+    }
+  })
+
+  if(fileid===filestore.UserId) return 1;
+
+  if(!filestore){
+    let shareduserstore=await SharedUserStore.findOne({
+      where:{
+        FileStoreId:fileid,
+        UserId:user
+      }
+    })
+
+    if(!shareduserstore) return 0;
+
+    else if(shareduserstore.accessType===action) return 1;
+
+    return 0;
+  }
+
+
+}
 
 
 
@@ -114,24 +142,17 @@ const tokenAuth = (req, res, next) => {
 
   //file upload middleware
 const fileDelete = async (req, res, next) => {
-
+  let deleteflag=0;
   const uploadsFolder = path.join(__dirname, 'uploads');
-  if(req.body.owner) req.body.userid=req.body.owner;
-    //Find the file to delete
-    let result=await FileStore.findOne({
-      where: {
-        name: req.body.filename,
-        location: req.body.location,
-        UserId:req.body.userid
-      },
-    })
-
+  
+    deleteflag=AuthAction(req.body.user,req.body.fileid);
     
-    if(result){
+    if(deleteflag){
+
 //after file is found get all the verisions
       let versions=await VersionStore.findAll({
         where:{
-          FileStoreId:result.id
+          FileStoreId:req.body.fileid
         }
       })
       if(versions){
@@ -139,48 +160,56 @@ const fileDelete = async (req, res, next) => {
      //if versions exist
         for(let i in versions){
           const filename =   versions[i].dataValues.uuid;
-          const filePath = path.join(uploadsFolder, filename);
+          const filePath = path.join(__dirname, '../uploads', filename);
           if (fs.existsSync(filePath)) {
             // Delete the file
             fs.unlinkSync(filePath);
-            console.log("Successfully deleted "+i.dataValues.uuid);
+          
           } 
         }
       }
 
 //delete filestore entry latest file
-      const filename =  result.uuid;
-      const filePath = path.join(uploadsFolder, filename);
+      let filestore=await FileStore.findOne({
+        where:{
+          id:req.body.fileid
+        }
+      })
+      const filename =  filestore.uuid;
+  
+      const filePath = path.join(__dirname, '../uploads', filename);
       if (fs.existsSync(filePath)) {
         // Delete the file
         fs.unlinkSync(filePath);
-        console.log("Successfully deleted "+result.uuid);
+        console.log("Successfully deleted "+filestore.uuid);
       }
 
       //destroy version entries in database
         await VersionStore.destroy({
           where: {
-            FileStoreId: result.id
+            FileStoreId: filestore.id
+          }
+        })
+        //Delete shared versions
+        await SharedUserStore.destroy({
+          where:{
+            FileStoreId:filestore.id,
           }
         })
         //destroy entry in filestore
         await FileStore.destroy({
           where: {
-            id: result.id
+            id: filestore.id
           }
         })
 
-        await SharedUserStore.destroy({
-          where:{
-            FileStoreId:result.id,
-          }
-        })
+ 
 
         res.redirect('/s3/viewfiles')
     }else{
 
       //if file not found
-      res.send("File not found");
+      res.send("Operation Not Possible");
     }
     
   
@@ -191,6 +220,19 @@ const fileDelete = async (req, res, next) => {
   const fileShare = async (req, res, next) => {
   
     const access = req.body.access;
+
+    if(req.body.shareduserstoreid){
+      await SharedUserStore.update(
+        { accessType: access },
+        {
+          where: {
+      id:req.body.shareduserstoreid,
+          },
+        }
+      )
+      
+      return res.redirect('/s3/viewfiles');
+    }
   
     //fetch the file from db
     let result=await FileStore.findOne({
@@ -206,6 +248,7 @@ const fileDelete = async (req, res, next) => {
     //when file is returned
     if(result){
       console.log(req.body.email);
+
       let user=await User.findOne({
         where:{
           email:req.body.email
@@ -214,32 +257,11 @@ const fileDelete = async (req, res, next) => {
    
 
       if(user){
-        //when user exist
-
-        let file=await SharedUserStore.findOne({
-          where:{
-            FileStoreId:result.id,
-            UserId:user.id,
-          }
-        })
-
-
-        if(file){
-
-          let updatepermission=await SharedUserStore.update(
-              { accessType: access },
-              {
-                where: {
-                  UserId: user.id,
-                  FileStoreId: result.id,
-                },
-              }
-            )
-
-            return res.redirect('/s3/viewfiles');
         
 
-        }else{
+
+
+       
           let share= SharedUserStore.build({
             FileStoreId:result.id,
             UserId:user.id,
@@ -261,11 +283,11 @@ const fileDelete = async (req, res, next) => {
               },
             }
           ).then(()=>{
-            return res.status(200).redirect('viewfiles')
+            return res.status(200).redirect('/s3/viewfiles')
           }).catch(()=>{
             res.status(404).send('File not found');
           })
-        }
+        
 
 
       }else{
@@ -281,7 +303,7 @@ const fileDelete = async (req, res, next) => {
     }
 
 
-    next();
+  
   
     };
     
@@ -292,9 +314,7 @@ const fileDelete = async (req, res, next) => {
       { access: req.body.visibility },
       {
         where: {
-          UserId: req.body.userid,
-          name: req.body.filename,
-          location:req.body.location
+         id:req.body.fileid
         },
       }
     ).then(()=>{
@@ -334,18 +354,18 @@ const fileDownload= async (req,res)=>{
     }
   }
 
-  console.log(req.body.owner);
 
-  let user=req.body.userid;
-  if(req.body.owner) user=req.body.owner
+  let downloadflag=0;
+ downloadflag=AuthAction(req.body.userid,req.body.fileid,"ReadOnly")
+
+
+
 
     // if(!user) return res.send('No user found');
 
     let file=await FileStore.findOne({
       where:{
-        UserId:user,
-        name:req.body.filename,
-        location:req.body.location,
+     id:req.body.fileid
       }
     })
     
