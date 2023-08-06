@@ -125,7 +125,7 @@ router.get('/searchfile',(req,res)=>{
 
 router.post('/deleteshare',tokenAuth,async(req,res)=>{
   console.log(req.body.shareid)
-  await SharedUserStore.destroy({ where: { id: req.body.sharedid} });
+  await SharedUserStore.destroy({ where: { id: req.body.sharedstoreid} });
   res.redirect('/s3/viewfiles')
 })
 
