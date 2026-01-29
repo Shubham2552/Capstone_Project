@@ -1,17 +1,22 @@
 const Sequelize=require('sequelize');
 
-// # HOST=localhost
-// # DATABASE_USER=shubhambhati
-// # DATABASE_PASSWORD=postgres
-// # DATABASE=psych-mind
+const HOST = 'localhost';
+const DATABASE_USER = 'shubhambhati';
+const DATABASE_PASSWORD = 'postgres';
+const DATABASE = 'capstone-project';
+const DIALECT = {
+    POSTGRES: 'postgres'
+}
+const PORT = 5432;
+
 
 const sequelize=new Sequelize(
-    'capstone-project',
-    'shubhambhati',
-    'postgres',{
-        dialect:'postgres',
-        host:'localhost',
-        port: 5432,
+    DATABASE,
+    DATABASE_USER,
+    DATABASE_PASSWORD,{
+        dialect:DIALECT.POSTGRES,
+        host:HOST,
+        port: PORT,
     }
 )
 

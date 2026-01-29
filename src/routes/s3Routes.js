@@ -87,11 +87,6 @@ router.get('/viewfiles', tokenAuth, async (req, res) => {
   })
 
 
-
-  console.log(sharedByYou);
-  console.log(sharedWithYou);
-
-
   return res.render('viewfiles', { files, sharedWithYou, sharedByYou });
 
 })
@@ -128,7 +123,6 @@ router.get('/searchfile', (req, res) => {
 
 
 router.post('/deleteshare', tokenAuth, async (req, res) => {
-  console.log(req.body.shareid)
   await SharedUserStore.destroy({ where: { id: req.body.sharedstoreid } });
   res.redirect('/s3/viewfiles')
 })

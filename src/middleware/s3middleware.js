@@ -66,7 +66,6 @@ const fileUpload = async (req, res, next) => {
     },
   });
 
-  console.log(result);
   //if file already exist
   if (result) {
     //fetch previous version from version store
@@ -81,14 +80,11 @@ const fileUpload = async (req, res, next) => {
 
     let versionNumber;
     //if previous verison exist
-    console.log(previousversion);
     if (previousversion != null) {
       versionNumber = previousversion.dataValues.maxVersion + 1;
-      console.log(previousversion.dataValues.maxVersion + 1);
     } else {
       versionNumber = 1;
     }
-    console.log(result.fileid);
     //add previous file in versionstore table
     const newverison = VersionStore.build({
       FileStoreId: result.id,
@@ -175,7 +171,6 @@ const fileDelete = async (req, res, next) => {
     if (fs.existsSync(filePath)) {
       // Delete the file
       fs.unlinkSync(filePath);
-      console.log("Successfully deleted " + filestore.uuid);
     }
 
     //destroy version entries in database
@@ -231,8 +226,6 @@ const fileShare = async (req, res, next) => {
 
   //when file is returned
   if (result) {
-    console.log(req.body.email);
-
     let user = await User.findOne({
       where: {
         email: req.body.email,
@@ -333,7 +326,6 @@ const fileDownload = async (req, res) => {
     },
   });
 
-  console.log(file);
 
   if (!file) return res.send("No File Found");
   if (file.UserId === req.body.userid) {

@@ -14,7 +14,6 @@ router.get('/register',(req,res)=>{
 
 router.post('/register',async (req,res)=>{
     //take out user details from request
- console.log(req.body);
     const getuser=await User.findOne({ where: { email: req.body.email } });
     if(getuser){
       return res.send("User Already Exist");
