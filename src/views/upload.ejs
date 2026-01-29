@@ -26,8 +26,13 @@
                   <input name="location" type="text" class="form-control" id="inputLocation" required>
                 </div>
                 <div class="form-group mt-3">
-                  <label for="inputaccessType">Access Type:(Public, Private, Shared)</label>
-                  <input type="text" class="form-control" name="accessType" id="inputaccessType" required>
+                  <label for="inputaccessType">Access Type:</label>
+                  <select class="form-control" name="accessType" id="inputaccessType" required>
+                    <option value="" disabled selected>Select access type</option>
+                    <option value="Public">Public</option>
+                    <option value="Private">Private</option>
+                    <option value="Shared">Shared</option>
+                  </select>
                 </div>
                 <div class="form-group mt-3">
                   <label for="inputDescription">Description</label>

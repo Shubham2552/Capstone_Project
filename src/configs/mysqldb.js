@@ -1,11 +1,17 @@
 const Sequelize=require('sequelize');
 
+// # HOST=localhost
+// # DATABASE_USER=shubhambhati
+// # DATABASE_PASSWORD=postgres
+// # DATABASE=psych-mind
+
 const sequelize=new Sequelize(
-    'S3BucketDB',
-    'root',
-    'root@mysql',{
-        dialect:'mysql',
-        host:'localhost'
+    'capstone-project',
+    'shubhambhati',
+    'postgres',{
+        dialect:'postgres',
+        host:'localhost',
+        port: 5432,
     }
 )
 

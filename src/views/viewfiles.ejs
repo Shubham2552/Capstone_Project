@@ -1,237 +1,240 @@
-<%- include('./partials/headerPartial', { pageTitle: 'ViewFiles' }) %>
+<%- include('./partials/headerPartial', { pageTitle: 'Your Files', session }) %>
 
-  <table class="table">
-    <thead>
-      <tr>
-        <th>File Name</th>
-        <th>Location</th>
-        <th>Description</th>
-        <th>Tag</th>
-        <th>Access</th>
-        <th>View Previous</th>
-        <th>Delete</th>
-        <th>Download</th>
+<link rel="stylesheet" href="/css/viewfiles.css">
 
-      </tr>
-    </thead>
-    <tbody>
-      <% for (let item of files) { %>
-        <tr>
-          <td><%= item.name %></td>
-          <td><%= item.location %></td>
-           <td><%= item.description %></td>
-          <td><%= item.tag %></td>
-          <td>
-            <!-- Button with Dropdown -->
-  <div class="btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true"
-      aria-expanded="false">
-      <%= item.access %>
-    </button>
-    <div class="dropdown-menu">
+<div class="viewfiles-page">
+  <div class="container py-4 py-md-5">
+    <!-- Your Files -->
+    <section class="files-section mb-5">
+      <div class="section-card">
+        <div class="section-header section-header--primary">
+          <h2 class="section-title">Your Files</h2>
+        </div>
+        <div class="section-body">
+          <% if (files && files.length > 0) { %>
+            <div class="file-list" role="list">
+              <% files.forEach(item => { %>
+                <div class="file-item" role="listitem">
+                  <div class="file-item__main">
+                    <div class="file-item__meta">
+                      <span class="file-item__name"><%= item.name %></span>
+                      <span class="file-item__location text-muted"><%= item.location %></span>
+                    </div>
+                    <% if (item.description) { %>
+                      <p class="file-item__desc mb-0"><%= item.description %></p>
+                    <% } %>
+                    <div class="file-item__badges">
+                      <% if (item.tag) { %>
+                        <span class="badge bg-secondary"><%= item.tag %></span>
+                      <% } %>
+                      <div class="dropdown dropdown-visibility d-inline-block" data-viewfiles-dropdown>
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <%= item.access %>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          <li class="dropdown-header small text-muted px-3 py-1">Set visibility</li>
+                          <li>
+                            <form action="/s3/visibility" method="post" class="px-3 py-2">
+                              <input type="hidden" name="fileid" value="<%= item.id %>">
+                              <div class="form-check mb-1">
+                                <input class="form-check-input" type="radio" name="visibility" value="Public" id="v-public-<%= item.id %>">
+                                <label class="form-check-label" for="v-public-<%= item.id %>">Public</label>
+                              </div>
+                              <div class="form-check mb-1">
+                                <input class="form-check-input" type="radio" name="visibility" value="Private" id="v-private-<%= item.id %>">
+                                <label class="form-check-label" for="v-private-<%= item.id %>">Private</label>
+                              </div>
+                              <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="visibility" value="Shared" id="v-shared-<%= item.id %>">
+                                <label class="form-check-label" for="v-shared-<%= item.id %>">Shared</label>
+                              </div>
+                              <button type="submit" class="btn btn-primary btn-sm w-100">Apply</button>
+                            </form>
+                          </li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="file-item__actions">
+                    <form action="/s3/previousversion" method="post" class="d-inline">
+                      <input type="hidden" name="filename" value="<%= item.name %>">
+                      <input type="hidden" name="location" value="<%= item.location %>">
+                      <input type="hidden" name="filestoreid" value="<%= item.id %>">
+                      <button type="submit" class="btn btn-sm btn-actions btn-actions--secondary">Versions</button>
+                    </form>
+                    <form action="/s3/download" method="post" class="d-inline">
+                      <input type="hidden" name="fileid" value="<%= item.id %>">
+                      <button type="submit" class="btn btn-sm btn-actions btn-actions--success">Download</button>
+                    </form>
+                    <form action="/s3/delete" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this file?');">
+                      <input type="hidden" name="fileid" value="<%= item.id %>">
+                      <button type="submit" class="btn btn-sm btn-actions btn-actions--danger">Delete</button>
+                    </form>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="empty-state">
+              <p class="empty-state__text">No files yet.</p>
+              <a href="/s3/upload" class="btn btn-primary">Upload your first file</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
 
-      <form action="/s3/visibility" method="post">
-        <input type="hidden" name="fileid" value="<%= item.id %>">
+    <!-- Shared With You -->
+    <section class="files-section mb-5">
+      <div class="section-card">
+        <div class="section-header section-header--info">
+          <h2 class="section-title">Shared with you</h2>
+        </div>
+        <div class="section-body">
+          <% if (sharedWithYou && sharedWithYou.length > 0) { %>
+            <div class="file-list" role="list">
+              <% sharedWithYou.forEach(item => { %>
+                <div class="file-item file-item--shared-in" role="listitem">
+                  <div class="file-item__main">
+                    <div class="file-item__meta">
+                      <span class="file-item__name"><%= item.FileStore.name %></span>
+                      <span class="file-item__location text-muted"><%= item.FileStore.location %></span>
+                    </div>
+                    <% if (item.FileStore.description) { %>
+                      <p class="file-item__desc mb-0"><%= item.FileStore.description %></p>
+                    <% } %>
+                    <div class="file-item__badges">
+                      <% if (item.FileStore.tag) { %>
+                        <span class="badge bg-secondary"><%= item.FileStore.tag %></span>
+                      <% } %>
+                      <span class="badge bg-primary"><%= item.accessType %></span>
+                    </div>
+                  </div>
+                  <div class="file-item__actions">
+                    <form action="/s3/download" method="post" class="d-inline">
+                      <input type="hidden" name="fileid" value="<%= item.FileStore.id %>">
+                      <button type="submit" class="btn btn-sm btn-actions btn-actions--success">Download</button>
+                    </form>
+                    <% if (item.accessType === 'WriteAccess') { %>
+                      <form action="/s3/delete" method="post" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this file?');">
+                        <input type="hidden" name="fileid" value="<%= item.FileStore.id %>">
+                        <button type="submit" class="btn btn-sm btn-actions btn-actions--danger">Delete</button>
+                      </form>
+                    <% } else { %>
+                      <span class="text-muted small">Read-only</span>
+                    <% } %>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="empty-state">
+              <p class="empty-state__text">No files shared with you.</p>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
 
-  
-        <!-- Visibility options -->
-        <label class="dropdown-item">
-          <input type="radio" name="visibility" value="Public" required> Public
-        </label>
-        <label class="dropdown-item">
-          <input type="radio" name="visibility" value="Private" required> Private
-        </label>
-        <label class="dropdown-item">
-          <input type="radio" name="visibility" value="Shared" required> Shared
-        </label>
-  
-        <!-- Submit Button -->
-        <button type="submit" class="dropdown-item btn btn-primary">Submit</button>
-      </form>
-    </div>
+    <!-- Shared By You -->
+    <section class="files-section">
+      <div class="section-card">
+        <div class="section-header section-header--warning">
+          <h2 class="section-title">Shared by you</h2>
+        </div>
+        <div class="section-body">
+          <% if (sharedByYou && sharedByYou.length > 0) { %>
+            <div class="file-list" role="list">
+              <% sharedByYou.forEach(item => { %>
+                <div class="file-item file-item--shared-out" role="listitem">
+                  <div class="file-item__main">
+                    <div class="file-item__meta">
+                      <span class="file-item__name"><%= item.FileStore.name %></span>
+                      <span class="file-item__location text-muted"><%= item.FileStore.location %></span>
+                    </div>
+                    <div class="file-item__badges">
+                      <div class="dropdown d-inline-block">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                          <%= item.accessType %>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          <li>
+                            <form action="/s3/share" method="post" class="px-3 py-2">
+                              <input type="hidden" name="shareduserstoreid" value="<%= item.id %>">
+                              <div class="form-check mb-1">
+                                <input class="form-check-input" type="radio" name="access" value="ReadOnly" id="acc-read-<%= item.id %>" <%= item.accessType === 'ReadOnly' ? 'checked' : '' %>>
+                                <label class="form-check-label" for="acc-read-<%= item.id %>">Read only</label>
+                              </div>
+                              <div class="form-check mb-2">
+                                <input class="form-check-input" type="radio" name="access" value="WriteAccess" id="acc-write-<%= item.id %>" <%= item.accessType === 'WriteAccess' ? 'checked' : '' %>>
+                                <label class="form-check-label" for="acc-write-<%= item.id %>">Write access</label>
+                              </div>
+                              <button type="submit" class="btn btn-primary btn-sm w-100">Update</button>
+                            </form>
+                          </li>
+                        </ul>
+                      </div>
+                      <span class="badge bg-info text-dark ms-1"><%= item.User.email %></span>
+                    </div>
+                  </div>
+                  <div class="file-item__actions">
+                    <form action="/s3/deleteshare" method="post" class="d-inline" onsubmit="return confirm('Remove sharing with this user?');">
+                      <input type="hidden" name="sharedstoreid" value="<%= item.id %>">
+                      <button type="submit" class="btn btn-sm btn-actions btn-actions--danger">Remove share</button>
+                    </form>
+                  </div>
+                </div>
+              <% }); %>
+            </div>
+          <% } else { %>
+            <div class="empty-state">
+              <p class="empty-state__text">You haven’t shared any files yet.</p>
+              <a href="/s3/share" class="btn btn-outline-primary">Share a file</a>
+            </div>
+          <% } %>
+        </div>
+      </div>
+    </section>
   </div>
-  
-          </td>
-          <td>
-            <form action="/s3/previousversion" method="post" >
-              
-              <input type="hidden" name="filename" value="<%= item.name %>">
-              <input type="hidden" name="location" value="<%= item.location %>">
-              <input type="hidden" name="filestoreid" value="<%= item.id %>">
-              <button type="submit" class="btn btn-primary">View Previous</button>
-            </form>
-          </td>
-          <td>
-           
-            <form action="/s3/delete" method="post" >
-              <input type="hidden" name="fileid" value="<%= item.id %>">
+</div>
 
-              <button type="submit" class="btn btn-danger">Delete</button>
-            </form>
-     
-       
-        </td>
+<script>
+(function() {
+  function initVisibilityDropdownPlacement() {
+    if (typeof bootstrap === 'undefined' || !bootstrap.Dropdown) return;
+    var popperConfig = {
+      placement: 'bottom-end',
+      modifiers: [{ name: 'flip', enabled: false }]
+    };
+    document.querySelectorAll('.viewfiles-page .dropdown-visibility').forEach(function(el) {
+      var existing = bootstrap.Dropdown.getInstance(el);
+      if (existing) existing.dispose();
+      new bootstrap.Dropdown(el, { popperConfig: popperConfig });
+    });
+  }
+  function initRowDropdownOpen() {
+    document.querySelectorAll('.viewfiles-page [data-viewfiles-dropdown]').forEach(function(el) {
+      el.addEventListener('show.bs.dropdown', function() {
+        var row = el.closest('.file-item');
+        if (row) row.classList.add('dropdown-open');
+      });
+      el.addEventListener('hide.bs.dropdown', function() {
+        var row = el.closest('.file-item');
+        if (row) row.classList.remove('dropdown-open');
+      });
+    });
+  }
+  function init() {
+    initRowDropdownOpen();
+    initVisibilityDropdownPlacement();
+  }
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+  window.addEventListener('load', initVisibilityDropdownPlacement);
+})();
+</script>
 
-        <td>
-          <form action="/s3/download" method="post" >
-            
-            <input type="hidden" name="fileid" value="<%= item.id%>">
-            <button type="submit" class="btn btn-primary">Download</button>
-          </form>
-        </td>
-
-
-        </tr>
-      <% } %>
-    </tbody>
-  </table>
-
-
-  <div class="row">
-    <div class="col">
-      <h2 class="text-center mt-5 mb-5">Shared With You</h2>
-    </div>
-  </div>
-
-
-<!-- This table is for shared with you -->
-    <table class="table">
-    <thead>
-      <tr>
-        <th>File Name</th>
-        <th>Location</th>
-        <th>Description</th>
-        <th>Tag</th>
-        <th>Access</th>
-        <th>Download</th>
-        <th>Delete</th>
-
-      </tr>
-    </thead>
-    <tbody>
-      <% if (sharedWithYou.length > 0) { %>
-      <% for (let item of sharedWithYou) { %>
-        <tr>
-          <td><%= item.FileStore.name %></td>
-          <td><%= item.FileStore.location %></td>
-           <td><%= item.FileStore.description %></td>
-          <td><%= item.FileStore.tag %></td>
-          <td>
-            <%= item.accessType %>
-          </td>
-          <td>
-            <form action="/s3/download" method="post" >
-              <input type="hidden" name="fileid" value="<%= item.FileStore.id%>">
-              <button type="submit" class="btn btn-primary">Download</button>
-            </form>
-          </td>
-
-
-        <% if (item.accessType==="WriteAccess") { %>
-          <td>
-            <form action="/s3/delete" method="post" >
-              <input type="hidden" name="fileid" value="<%= item.FileStore.id%>">
-    
-         
-              <button type="submit" class="btn btn-primary">Delete</button>
-            </form>
-          </td>
-      <% }  %>
-
-        
-    
-
-
-        </tr>
-      <% } %>
-
-      <% } else { %>
-        <tr>
-          <td colspan="4">No items shared with you.</td>
-        </tr>
-      <% } %>
-    </tbody>
-  </table>
- 
-
-  <div class="row">
-    <div class="col">
-      <h2 class="text-center mt-5 mb-5">Shared By You</h2>
-    </div>
-  </div>
-
-
-
-
-
-  <!-- This table is for shared by you -->
-  <table class="table">
-    <thead>
-      <tr>
-        <th>File Name</th>
-        <th>Location</th>
-        <th>Access</th>
-        <th>SharedWith</th>
-        <th>Delete</th>
-
-      </tr>
-    </thead>
-    <tbody>
-      <% if (sharedByYou.length > 0) { %>
-      <% for (let item of sharedByYou) { %>
-        <tr>
-          <td><%= item.FileStore.name %></td>
-          <td><%= item.FileStore.location %></td>
-          <td>
-             <div class="btn-group">
-    <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true"
-      aria-expanded="false">
-      <%= item.accessType %>
-    </button>
-    <div class="dropdown-menu">
-
-      <form action="/s3/share" method="post">
-        <input type="hidden" name="shareduserstoreid" value="<%= item.id %>">
-
-  
-        <!-- Visibility options -->
-        <label class="dropdown-item">
-          <input type="radio" name="access" value="ReadOnly" required> ReadOnly
-        </label>
-        <label class="dropdown-item">
-          <input type="radio" name="access" value="WriteAccess" required> WriteAccess
-        </label>
-      
-  
-        <!-- Submit Button -->
-        <button type="submit" class="dropdown-item btn btn-primary">Submit</button>
-      </form>
-    </div>
-  </div>
-  
-          </td>
-          <td>
-            
-            <%= item.User.email %>
-        </td>
-
-        <td>
-          <form action="/s3/deleteshare" method="post" >
-            
-            <input type="hidden" name="sharedstoreid" value="<%= item.id %>">
-            <button type="submit" class="btn btn-primary">Delete Share</button>
-          </form>
-        </td>
-
-
-        </tr>
-      <% } %>
-      <% } else { %>
-        <tr>
-          <td colspan="4">No items shared with you.</td>
-        </tr>
-      <% } %>
-    </tbody>
-  </table>
-
-  <%- include('./partials/footerPartial') %>
+<%- include('./partials/footerPartial') %>

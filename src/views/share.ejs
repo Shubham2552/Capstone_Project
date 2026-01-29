@@ -1,45 +1,109 @@
-<%- include('./partials/headerPartial', { pageTitle: 'Share' }) %>
+<%- include('./partials/headerPartial', { pageTitle: 'Share', session }) %>
 
-  <div class="container mt-5">
-    <div class="row justify-content-center">
-      <div class="col-md-6 col-sm-8">
-        <div class="card">
-          <div class="card-header bg-dark text-white">
-            <h4 class="mb-0">File Sharing Form</h4>
-          </div>
-          <div class="card-body">
-            <form action="/s3/share" method="post">
-              <div class="form-group">
-                <label for="filename">Filename:</label>
-                <input type="text" class="form-control" id="filename" name="filename" required>
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white">
+          <h4 class="mb-0">Share a File</h4>
+        </div>
+        <div class="card-body">
+          <% if (typeof files !== 'undefined' && files.length > 0) { %>
+            <form id="shareForm" action="/s3/share" method="post">
+              <input type="hidden" name="filename" id="hiddenFilename" value="">
+              <input type="hidden" name="location" id="hiddenLocation" value="">
+
+              <div class="mb-3">
+                <label for="fileSelect" class="form-label">Select file to share</label>
+                <select class="form-select" id="fileSelect" name="fileId" required>
+                  <option value="" disabled selected>Choose a file</option>
+                  <% files.forEach(function(file) { %>
+                    <option
+                      value="<%= file.id %>"
+                      data-filename="<%= file.name %>"
+                      data-location="<%= file.location %>"
+                    >
+                      <%= file.name %> — <%= file.location %>
+                    </option>
+                  <% }); %>
+                </select>
               </div>
-              <div class="form-group">
-                <label for="location">Location:</label>
-                <input type="text" class="form-control" id="location" name="location" required>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Share with (email)</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  placeholder="user@example.com"
+                  required
+                >
               </div>
-              <div class="form-group">
-                <label for="email">Enter Email of User to Share with:</label>
-                <input type="text" class="form-control" id="email" name="email" required>
-              </div>
-              <div class="form-group">
-                <label>Access:</label>
+
+              <div class="mb-4">
+                <span class="form-label d-block">Access</span>
                 <div class="form-check">
-                  <input type="radio" class="form-check-input" id="readonly" name="access" value="ReadOnly" required>
+                  <input
+                    type="radio"
+                    class="form-check-input"
+                    id="readonly"
+                    name="access"
+                    value="ReadOnly"
+                    required
+                  >
                   <label class="form-check-label" for="readonly">Read-only</label>
                 </div>
                 <div class="form-check">
-                  <input type="radio" class="form-check-input" id="writeaccess" name="access" value="WriteAccess" required>
-                  <label class="form-check-label" for="writeaccess">Write Access</label>
+                  <input
+                    type="radio"
+                    class="form-check-input"
+                    id="writeaccess"
+                    name="access"
+                    value="WriteAccess"
+                  >
+                  <label class="form-check-label" for="writeaccess">Write access</label>
                 </div>
               </div>
-              <button type="submit" class="btn btn-primary btn-block">Submit</button>
+
+              <button type="submit" class="btn btn-primary w-100">Share file</button>
             </form>
-          </div>
+          <% } else { %>
+            <div class="alert <%= typeof noFiles !== 'undefined' && noFiles ? 'alert-danger' : 'alert-warning' %> text-center mb-0">
+              No files found. Upload a file first to share it.
+            </div>
+            <div class="text-center mt-3">
+              <a href="/s3/upload" class="btn btn-outline-primary">Upload a file</a>
+              <a href="/s3/viewfiles" class="btn btn-outline-secondary ms-2">View files</a>
+            </div>
+          <% } %>
         </div>
       </div>
     </div>
   </div>
+</div>
 
-  <%- include('./partials/footerPartial') %>
+<script>
+  (function() {
+    var form = document.getElementById('shareForm');
+    if (!form) return;
+    var select = document.getElementById('fileSelect');
+    var hiddenFilename = document.getElementById('hiddenFilename');
+    var hiddenLocation = document.getElementById('hiddenLocation');
 
+    function syncFromSelect() {
+      var opt = select.options[select.selectedIndex];
+      if (opt && opt.value) {
+        hiddenFilename.value = opt.getAttribute('data-filename') || '';
+        hiddenLocation.value = opt.getAttribute('data-location') || '';
+      }
+    }
 
+    select.addEventListener('change', syncFromSelect);
+    form.addEventListener('submit', function() {
+      syncFromSelect();
+    });
+  })();
+</script>
+
+<%- include('./partials/footerPartial') %>

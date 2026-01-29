@@ -1,18 +1,18 @@
-const express=require('express');
-const router=express.Router();
-const sequalize=require('../configs/mysqldb').sequelize;
+const express = require('express');
+const router = express.Router();
+const sequalize = require('../configs/mysqldb').sequelize;
 
 
 const { Model } = require('sequelize');
-const bcrypt=require('bcrypt');
-const jwt=require('jsonwebtoken');
-const multer=require('multer');
-const {User, FileStore, SharedUserStore, VersionStore}=require('../models/Models');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const { User, FileStore, SharedUserStore, VersionStore } = require('../models/Models');
 const { v4: uuidv4 } = require('uuid');
-const path=require('path');
+const path = require('path');
 
 
-let {tokenAuth,fileUpload,fileDelete,fileShare,setVisibility,fileDownload,searchFile}=require('../middleware/s3middleware')
+let { tokenAuth, fileUpload, fileDelete, fileShare, setVisibility, fileDownload, searchFile } = require('../middleware/s3middleware')
 
 
 const storage = multer.diskStorage({
@@ -23,8 +23,8 @@ const storage = multer.diskStorage({
     const uniqueFilename = uuidv4(); // Generate a UUID as the filename
     req.body.extension = path.extname(file.originalname);
 
-  
-    
+
+
     cb(null, uniqueFilename);
   },
 });
@@ -33,57 +33,57 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 
-router.get('/',(req,res)=>{
+router.get('/', (req, res) => {
   res.render('index');
 })
 
 //post request to handle upload
-router.get('/upload',(req,res)=>{
+router.get('/upload', (req, res) => {
   res.render('upload');
-}).post('/upload', upload.single('file'),tokenAuth,fileUpload, async(req, res) => {
-  
-       // You can access the uploaded file's details using req.file
-       const fileDetails = {
-        originalname: req.file.originalname,
-        filename: req.file.filename,
-        mimetype: req.file.mimetype,
-        size: req.file.size,
-        destination: req.file.destination,
-        name:req.body.filename,
-        location:req.body.location,
-        access:req.body.accessType,
-        owner:req.userid,
-        uuid:req.file.filename
-  
-      };
+}).post('/upload', upload.single('file'), tokenAuth, fileUpload, async (req, res) => {
+
+  // You can access the uploaded file's details using req.file
+  const fileDetails = {
+    originalname: req.file.originalname,
+    filename: req.file.filename,
+    mimetype: req.file.mimetype,
+    size: req.file.size,
+    destination: req.file.destination,
+    name: req.body.filename,
+    location: req.body.location,
+    access: req.body.accessType,
+    owner: req.userid,
+    uuid: req.file.filename
+
+  };
 
 
-   
-    return res.redirect('/s3/viewfiles');
-  });
+
+  return res.redirect('/s3/viewfiles');
+});
 
 
 //route to view all files where user is owner
-  router.get('/viewfiles',tokenAuth,async (req,res)=>{
-
-    
-   const files= await FileStore.findAll({ where: { UserId: req.body.userid } });
-   if(!files) return res.status(404).send('Files not found');
+router.get('/viewfiles', tokenAuth, async (req, res) => {
 
 
-   const sharedWithYou= await SharedUserStore.findAll({
-    where:{
-      UserId:req.body.userid
+  const files = await FileStore.findAll({ where: { UserId: req.body.userid } });
+  if (!files) return res.status(404).send('Files not found');
+
+
+  const sharedWithYou = await SharedUserStore.findAll({
+    where: {
+      UserId: req.body.userid
     },
-    include:[User,FileStore],
-   })
+    include: [User, FileStore],
+  })
 
 
-  const sharedByYou= await SharedUserStore.findAll({
-    where:{
-      owner:req.body.userid,
+  const sharedByYou = await SharedUserStore.findAll({
+    where: {
+      owner: req.body.userid,
     },
-    include:[FileStore,User]
+    include: [FileStore, User]
   })
 
 
@@ -92,72 +92,76 @@ router.get('/upload',(req,res)=>{
   console.log(sharedWithYou);
 
 
-   return res.render('viewfiles', { files ,sharedWithYou,sharedByYou});
+  return res.render('viewfiles', { files, sharedWithYou, sharedByYou });
 
-  })
-
-router.get('/delete',(req,res)=>{
-  res.render('delete')
-}).post('/delete',tokenAuth,fileDelete,(req,res)=>{
-res.send('Some critical Error Occured');
 })
 
-router.get('/share',(req,res)=>{
-  res.render('share')
-}).post('/share',tokenAuth,fileShare)
+router.get('/delete', (req, res) => {
+  res.render('delete')
+}).post('/delete', tokenAuth, fileDelete, (req, res) => {
+  res.send('Some critical Error Occured');
+})
+
+router.get('/share', tokenAuth, async (req, res) => {
+  const files = await FileStore.findAll({ where: { UserId: req.body.userid } });
+  if (!files || files.length === 0) {
+    return res.status(404).render('share', { files: [], noFiles: true });
+  }
+  return res.render('share', { files });
+}).post('/share', tokenAuth, fileShare)
 
 
-router.get('/visibility',(req,res)=>{
+router.get('/visibility', (req, res) => {
   res.render('visibility');
-}).post('/visibility',tokenAuth,setVisibility)
+}).post('/visibility', tokenAuth, setVisibility)
 
-router.get('/download',(req,res)=>{
+router.get('/download', (req, res) => {
   res.render('download');
-}).post('/download',tokenAuth,fileDownload)
+}).post('/download', tokenAuth, fileDownload)
 
 
 
 
-router.get('/searchfile',(req,res)=>{
+router.get('/searchfile', (req, res) => {
   res.render('searchfile', { results: [], searched: false });
-}).post('/searchfile',tokenAuth,searchFile)
+}).post('/searchfile', tokenAuth, searchFile)
 
 
-router.post('/deleteshare',tokenAuth,async(req,res)=>{
+router.post('/deleteshare', tokenAuth, async (req, res) => {
   console.log(req.body.shareid)
-  await SharedUserStore.destroy({ where: { id: req.body.sharedstoreid} });
+  await SharedUserStore.destroy({ where: { id: req.body.sharedstoreid } });
   res.redirect('/s3/viewfiles')
 })
 
 
-router.post('/previousversion',tokenAuth,async(req,res)=>{
-  let {filename,location}=req.body;
-  let previousVersion=await VersionStore.findAll({ where: { FileStoreId: req.body.filestoreid} });
-  return res.render('previousversion',{previousVersion,filename,location});
+router.post('/previousversion', tokenAuth, async (req, res) => {
+  let { filename, location } = req.body;
+  let previousVersion = await VersionStore.findAll({ where: { FileStoreId: req.body.filestoreid } });
+  return res.render('previousversion', { previousVersion, filename, location });
 })
 
-router.post('/previousversiondownload',tokenAuth,async(req,res)=>{
-  const {filename}=req.body;
-  
-  let previousVersion=await VersionStore.findOne({ where: { id: req.body.id} });
-  
-  function download(){
+router.post('/previousversiondownload', tokenAuth, async (req, res) => {
+  const { filename } = req.body;
+
+  let previousVersion = await VersionStore.findOne({ where: { id: req.body.id } });
+
+  function download() {
     try {
       // Retrieve the file details from the database using Sequeliz
-  
+
       // Get the filename from the database record
       const filename2 = previousVersion.uuid;
-  
+
       // Create the file path
       const filePath = path.join(__dirname, '../uploads', filename2);
-  
+
       const customFilename = `${filename}${previousVersion.extension}`;
-  
+
       // Send the file as a response using res.download()
-      return res.download(filePath,customFilename , (err) => {
+      return res.download(filePath, customFilename, (err) => {
         if (err) {
           console.error('Error occurred during file download:', err);
-         return res.status(500).send('Error downloading the file.');
+          return res.status(500).send('Error downloading the file.');
         }
       });
     } catch (error) {
@@ -167,7 +171,8 @@ router.post('/previousversiondownload',tokenAuth,async(req,res)=>{
   }
 
   return download();
- 
+
 })
 
-module.exports=router;
+
+module.exports = router;

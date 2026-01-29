@@ -5,47 +5,93 @@
 <head>
   <title><%= pageTitle %></title>
   <!-- Add your CSS and other head content here -->
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Include Bootstrap CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <style>
+    .custom-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #1769aa !important;
+      letter-spacing: 1px;
+      text-decoration: none;
+    }
+    .custom-logo-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, #1976d2, #00bcd4 80%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      color: #fff;
+      box-shadow: 0 2px 10px rgba(25, 118, 210, 0.07);
+    }
+    .navbar {
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    }
+    /* Adjust main margin for sticky header if needed */
+    main {
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
- <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container">
-    <a class="navbar-brand" href="/">Logo</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+<nav class="navbar navbar-expand-lg navbar-light bg-light py-3">
+  <div class="container d-flex flex-row justify-content-between align-items-center">
+    <div class="d-flex flex-row flex-grow-1">
+      <div class="collapse navbar-collapse show" id="navbarNav">
+        <ul class="navbar-nav">
+          <% if(!session.token) { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/Register">Register</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/login">Login</a>
+            </li>
+          <% } else { %>
+            <li class="nav-item">
+              <a class="nav-link" href="/user/logout">Logout</a>
+            </li>
+            <!-- Dropdown menu -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
+                 aria-expanded="false">
+                File Options
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="/s3/upload">Upload</a></li>
+                <li><a class="dropdown-item" href="/s3/viewfiles">View Files</a></li>
+                <li><a class="dropdown-item" href="/s3/searchfile">Search File</a></li>
+                <li><a class="dropdown-item" href="/s3/share">Share</a></li>
+              </ul>
+            </li>
+          <% } %>
+        </ul>
+      </div>
+    </div>
+    <div class="ms-auto">
+      <a class="custom-logo" href="/">
+        <span class="custom-logo-icon">
+          <svg width="22" height="22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2.5" y="2.5" width="17" height="17" rx="4" fill="#62c6ff"/>
+            <path d="M6.5 11H15.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+            <path d="M11 6.5L11 15.5" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
+        FileBox
+      </a>
+    </div>
+    <button class="navbar-toggler ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
       aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item">
-          <a class="nav-link" href="/user/Register">Register</a>
-        </li>
-        <li class="nav-item">
-          <a class="nav-link" href="/user/login">Login</a>
-        </li>
-
-        <!-- Dropdown menu -->
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown"
-            aria-expanded="false">
-            File Options
-          </a>
-          <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-            <li><a class="dropdown-item" href="/s3/upload">Upload</a></li>
-            <li><a class="dropdown-item" href="/s3/viewfiles">View Files</a></li>
-            <li><a class="dropdown-item" href="/s3/searchfile">Search File</a></li>
-            <li><a class="dropdown-item" href="/s3/share">Share</a></li>
-           
-         
-          </ul>
-        </li>
-      </ul>
-    </div>
   </div>
 </nav>
 
-  <!-- Insert the content of the specific view here -->
-  <main>
+<!-- Insert the content of the specific view here -->
+<main>
