@@ -100,7 +100,7 @@ The server runs at **http://localhost:3000**.
 - **/** or **/user/login** — Log in with email and password.
 - **/user/register** — Create an account (name, email, password).
 
-![Login](screenshots/Screenshot%202026-01-29%20at%2012.43.14%20PM.png)
+![Login](screenshots/Screenshot-1.png)
 
 After login you are redirected to **Your Files**.
 
@@ -111,25 +111,25 @@ After login you are redirected to **Your Files**.
   - **Shared with you** — Files shared with you; download (and delete if you have write access).
   - **Shared by you** — Files you shared; change access or remove share.
 
-![Your Files](screenshots/Screenshot%202026-01-29%20at%2012.43.27%20PM.png)
+![Your Files](screenshots/Screenshot-2.png)
 
 ### Upload
 
 - **/s3/upload** — Upload a file with name, location, access type, optional description and tag.
 
-![Upload](screenshots/Screenshot%202026-01-29%20at%2012.43.30%20PM.png)
+![Upload](screenshots/Screenshot-3.png)
 
 ### Share
 
 - **/s3/share** — Pick a file, enter the recipient’s email, choose Read-only or Write access, and submit.
 
-![Share](screenshots/Screenshot%202026-01-29%20at%2012.43.34%20PM.png)
+![Share](screenshots/Screenshot-4.png)
 
 ### Search
 
 - **/s3/searchfile** — Search your files by keyword (name, description, tag).
 
-![Search](screenshots/Screenshot%202026-01-29%20at%2012.43.47%20PM.png)
+![Search](screenshots/Screenshot-5.png)
 
 ### Other screens
 
@@ -138,7 +138,7 @@ After login you are redirected to **Your Files**.
 - **/s3/visibility** — Set file visibility (Public/Private/Shared).
 - **Previous versions** — From “Your Files,” use “Versions” to view and download older versions.
 
-![View Files](screenshots/Screenshot%202026-01-29%20at%2012.43.51%20PM.png)
+![View Files](screenshots/Screenshot-6.png)
 
 ---
 
