@@ -2,8 +2,6 @@
 
 A full-stack web application for managing files in the cloud: upload, organize, share with others, control visibility, and keep previous versions. Built with Node.js, Express, EJS, and PostgreSQL (or MySQL).
 
-![Login](screenshots/Screenshot%202026-01-29%20at%2012.43.14%20PM.png)
-
 ---
 
 ## Features
